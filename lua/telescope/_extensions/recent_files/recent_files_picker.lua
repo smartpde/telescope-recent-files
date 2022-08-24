@@ -98,11 +98,11 @@ local function prepare_recent_files(opts)
 end
 
 M.recent_files = function(opts)
-  pickers.new(opts, {
+  pickers.new({}, {
     prompt_title = "Recent files",
     finder = finders.new_table {
       results = prepare_recent_files(opts),
-      entry_maker = opts.entry_maker or make_entry.gen_from_file()
+      entry_maker = make_entry.gen_from_file()
     },
     sorter = conf.file_sorter(),
     previewer = conf.file_previewer()
