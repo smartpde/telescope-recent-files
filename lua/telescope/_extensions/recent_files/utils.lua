@@ -9,8 +9,10 @@ M.assign = function(...)
   local res = select(1, ...)
   for i = 2, n do
     local t = select(i, ...)
-    for k, v in pairs(t) do
-      res[k] = v
+    if t then
+      for k, v in pairs(t) do
+        res[k] = v
+      end
     end
   end
   return res
