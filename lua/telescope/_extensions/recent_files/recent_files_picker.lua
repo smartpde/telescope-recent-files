@@ -105,7 +105,7 @@ M.recent_files = function(opts)
       entry_maker = make_entry.gen_from_file()
     },
     sorter = conf.file_sorter(),
-    previewer = conf.file_previewer()
+    previewer = conf.file_previewer({})
   }):find()
 end
 
