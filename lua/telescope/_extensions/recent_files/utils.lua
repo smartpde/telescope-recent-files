@@ -6,7 +6,7 @@ M.assign = function(...)
   if n == 0 then
     return nil
   end
-  local res = select(1, ...)
+  local res = select(1, ...) or {}
   for i = 2, n do
     local t = select(i, ...)
     if t then
