@@ -2,7 +2,7 @@ local pickers = require "telescope.pickers"
 local finders = require "telescope.finders"
 local make_entry = require "telescope.make_entry"
 local conf = require"telescope.config".values
-local utils = require "utils"
+local utils = require "telescope._extensions.recent-files.utils"
 
 local M = {}
 
@@ -13,8 +13,7 @@ local recent_bufs = {}
 local recent_cnt = 0
 
 M.setup = function(opts)
-  print("setup called " .. vim.inspect(opts))
-  options = utils.assign({{}, defaults, opts})
+  options = utils.assign({}, defaults, opts)
 end
 
 _G.telescope_recent_files_buf_enter = function()
@@ -30,7 +29,7 @@ _G.telescope_recent_files_buf_enter = function()
 end
 
 vim.cmd [[
-augroup recents
+augroup telescope_recent_files
   au!
   au! BufEnter * lua telescope_recent_files_buf_enter()
 augroup END
@@ -43,7 +42,8 @@ local function add_recent_file(results, file_path)
   local should_add = true
   if vim.tbl_contains(results, file_path) then
     should_add = false
-  elseif options.ignore_pattern and string.find(file_path, options.ignore_pattern) then
+  elseif options.ignore_pattern and
+    string.find(file_path, options.ignore_pattern) then
     should_add = false
   end
   if should_add then
