@@ -7,5 +7,5 @@ end
 
 return telescope.register_extension {
   setup = picker.setup,
-  exports = {pick = picker.recent_files}
+  exports = {pick = picker.pick}
 }
