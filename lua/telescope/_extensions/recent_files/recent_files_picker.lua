@@ -12,6 +12,7 @@ local options
 local defaults = {
   stat_files = true,
   ignore_patterns = {"/tmp/"},
+  only_cwd = false,
   transform_file_path = function (path)
     return path
   end,
@@ -66,6 +67,12 @@ local function is_ignored(file_path)
   return false
 end
 
+local function is_in_cwd(file_path)
+  local cwd = vim.loop.cwd()
+  cwd = cwd:gsub([[\]], [[\\]])
+  return vim.fn.matchstrpos(file_path, cwd)[2] ~= -1
+end
+
 local function add_recent_file(result_list, result_map, file_path)
   if options.transform_file_path then
     file_path = options.transform_file_path(file_path)
@@ -79,6 +86,10 @@ local function add_recent_file(result_list, result_map, file_path)
   if should_add and options.stat_files and not stat(file_path) then
     should_add = false
   end
+  if should_add and options.only_cwd and not is_in_cwd(file_path) then
+    should_add = false
+  end
+
   if should_add then
     table.insert(result_list, file_path)
     result_map[file_path] = true
