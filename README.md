@@ -81,6 +81,10 @@ The extension provides the following options:
   If you're opening some logs or other temporary files, you can configure the ignore
   patters in order not to clutter the pickers.
 
+- `only_cwd` (default `false`).
+
+  Show only files in the cwd.
+
 - `transform_file_path` (default `function(file_path) return file_path end`).
 
   This is a Lua function to modify the file path for each entry in the pickers,
