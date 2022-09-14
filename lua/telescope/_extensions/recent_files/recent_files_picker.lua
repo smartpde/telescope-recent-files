@@ -142,18 +142,19 @@ local function prepare_recent_files()
   return result_list
 end
 
-M.pick = function()
+M.pick = function(opts)
+  opts = opts or {}
   if not options then
     error("Plugin is not set up, call require('telescope').load_extension('recent_files')")
   end
-  pickers.new({}, {
+  pickers.new(opts, {
     prompt_title = "Recent files",
     finder = finders.new_table {
       results = prepare_recent_files(),
       entry_maker = make_entry.gen_from_file()
     },
     sorter = conf.file_sorter(),
-    previewer = conf.file_previewer({})
+    previewer = conf.file_previewer(opts)
   }):find()
 end
 
