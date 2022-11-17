@@ -92,3 +92,9 @@ The extension provides the following options:
   Note that this function does not affect how the file path is displayed, use
   `:h telescope.defaults.path_display` for this.
 
+- `show_current_file` (default `false`).
+
+  If true, the file opened in the current window will be also shown in the picker.
+  By default, the current file is not displayed as it is already open. But this
+  behavior can be tuned according to one's liking.
+
