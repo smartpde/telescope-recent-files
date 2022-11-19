@@ -152,7 +152,7 @@ M.pick = function(opts)
     prompt_title = "Recent files",
     finder = finders.new_table {
       results = prepare_recent_files(),
-      entry_maker = make_entry.gen_from_file()
+      entry_maker = make_entry.gen_from_file(opts)
     },
     sorter = conf.file_sorter(),
     previewer = conf.file_previewer(opts)
