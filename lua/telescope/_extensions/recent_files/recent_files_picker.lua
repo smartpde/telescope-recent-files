@@ -58,11 +58,11 @@ local function stat(filename)
   return s.type
 end
 
-local function is_ignored(file_path)
-  if options.ignore_patterns == nil then
+local function is_ignored(file_path, opts)
+  if opts.ignore_patterns == nil then
     return false
   end
-  for _,p in ipairs(options.ignore_patterns) do
+  for _,p in ipairs(opts.ignore_patterns) do
    if string.find(file_path, p) then return true end
   end
   return false
@@ -74,20 +74,20 @@ local function is_in_cwd(file_path)
   return vim.fn.matchstrpos(file_path, cwd)[2] ~= -1
 end
 
-local function add_recent_file(result_list, result_map, file_path)
-  if options.transform_file_path then
-    file_path = options.transform_file_path(file_path)
+local function add_recent_file(result_list, result_map, file_path, opts)
+  if opts.transform_file_path then
+    file_path = opts.transform_file_path(file_path)
   end
   local should_add = file_path ~= nil and file_path ~= ""
   if result_map[file_path] then
     should_add = false
-  elseif is_ignored(file_path) then
+  elseif is_ignored(file_path, opts) then
     should_add = false
   end
-  if should_add and options.stat_files and not stat(file_path) then
+  if should_add and opts.stat_files and not stat(file_path) then
     should_add = false
   end
-  if should_add and options.only_cwd and not is_in_cwd(file_path) then
+  if should_add and opts.only_cwd and not is_in_cwd(file_path) then
     should_add = false
   end
 
@@ -97,7 +97,7 @@ local function add_recent_file(result_list, result_map, file_path)
   end
 end
 
-local function prepare_recent_files()
+local function prepare_recent_files(opts)
   local current_buffer = vim.api.nvim_get_current_buf()
   local current_file = vim.api.nvim_buf_get_name(current_buffer)
   local result_list = {}
@@ -105,14 +105,14 @@ local function prepare_recent_files()
   local old_files_map = {}
 
   for i, file in ipairs(vim.v.oldfiles) do
-    if options.show_current_file or file ~= current_file then
-      add_recent_file(result_list, result_map, file)
+    if opts.show_current_file or file ~= current_file then
+      add_recent_file(result_list, result_map, file, opts)
       old_files_map[file] = i
     end
   end
   for buffer_file in pairs(recent_bufs) do
-    if options.show_current_file or buffer_file ~= current_file then
-      add_recent_file(result_list, result_map, buffer_file)
+    if opts.show_current_file or buffer_file ~= current_file then
+      add_recent_file(result_list, result_map, buffer_file, opts)
     end
   end
   table.sort(result_list, function(a, b)
@@ -144,14 +144,14 @@ local function prepare_recent_files()
 end
 
 M.pick = function(opts)
-  opts = opts or {}
   if not options then
     error("Plugin is not set up, call require('telescope').load_extension('recent_files')")
   end
+  opts = utils.assign({}, options, opts)
   pickers.new(opts, {
     prompt_title = "Recent files",
     finder = finders.new_table {
-      results = prepare_recent_files(),
+      results = prepare_recent_files(opts),
       entry_maker = make_entry.gen_from_file(opts)
     },
     sorter = conf.file_sorter(),
