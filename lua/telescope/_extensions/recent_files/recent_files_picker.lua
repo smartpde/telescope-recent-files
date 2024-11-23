@@ -68,10 +68,24 @@ local function is_ignored(file_path, opts)
   return false
 end
 
+--- @type fun(path: string): string
+local function normalize(path)
+  path = path:gsub('\\', '/')
+  if path:sub(-1) == '/' then
+    path = path:sub(1, -2)
+  end
+  return path
+end
+
 local function is_in_cwd(file_path)
   local cwd = vim.loop.cwd()
-  cwd = cwd:gsub([[\]], [[\\]])
-  return vim.fn.matchstrpos(file_path, cwd)[2] ~= -1
+  local parent_path = normalize(cwd)
+  local child_path = normalize(file_path)
+
+  local is_parent_prefix  = child_path:sub(1, #parent_path) == parent_path
+  local is_direct_child_or_same_path = child_path:sub(#parent_path + 1, #parent_path + 1) == '/' or child_path:sub(#parent_path + 1, #parent_path + 1) == ''
+
+  return is_parent_prefix and is_direct_child_or_same_path
 end
 
 local function add_recent_file(result_list, result_map, file_path, opts)
