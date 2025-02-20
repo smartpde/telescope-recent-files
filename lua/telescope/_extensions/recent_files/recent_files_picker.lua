@@ -1,8 +1,9 @@
 local pickers = require "telescope.pickers"
 local finders = require "telescope.finders"
 local make_entry = require "telescope.make_entry"
-local conf = require"telescope.config".values
+local conf = require "telescope.config".values
 local utils = require "telescope._extensions.recent_files.utils"
+local themes = require "telescope.themes"
 
 local M = {}
 
@@ -11,9 +12,9 @@ local options
 
 local defaults = {
   stat_files = true,
-  ignore_patterns = {"/tmp/"},
+  ignore_patterns = { "/tmp/" },
   only_cwd = false,
-  transform_file_path = function (path)
+  transform_file_path = function(path)
     return path
   end,
   show_current_file = false,
@@ -24,25 +25,29 @@ local defaults = {
 local recent_bufs = {}
 --Global counter of recent files. Increased when a buffer was entered.
 local recent_cnt = 0
+local theme_opts = {}
 
 M.setup = function(opts)
   options = utils.assign({}, defaults, opts)
+  if opts.theme and opts.theme ~= "" then
+    theme_opts = themes["get_" .. opts.theme]()
+  end
 end
 
 --We keep track of recent buffer by listening to BufEnter events,
 --and giving each file its monotonically increasing recency number.
 _G.telescope_recent_files_buf_register =
-  function()
-    local bufnr = vim.api.nvim_get_current_buf()
-    local file = vim.api.nvim_buf_get_name(bufnr)
-    if options.transform_file_path then
-      file = options.transform_file_path(file)
+    function()
+      local bufnr = vim.api.nvim_get_current_buf()
+      local file = vim.api.nvim_buf_get_name(bufnr)
+      if options.transform_file_path then
+        file = options.transform_file_path(file)
+      end
+      if file ~= "" then
+        recent_bufs[file] = recent_cnt
+        recent_cnt = recent_cnt + 1
+      end
     end
-    if file ~= "" then
-      recent_bufs[file] = recent_cnt
-      recent_cnt = recent_cnt + 1
-    end
-  end
 vim.cmd [[
 augroup telescope_recent_files
   au!
@@ -62,8 +67,8 @@ local function is_ignored(file_path, opts)
   if opts.ignore_patterns == nil then
     return false
   end
-  for _,p in ipairs(opts.ignore_patterns) do
-   if string.find(file_path, p) then return true end
+  for _, p in ipairs(opts.ignore_patterns) do
+    if string.find(file_path, p) then return true end
   end
   return false
 end
@@ -78,12 +83,13 @@ local function normalize(path)
 end
 
 local function is_in_cwd(file_path)
-  local cwd = vim.loop.cwd()
-  local parent_path = normalize(cwd)
-  local child_path = normalize(file_path)
+  local cwd                          = vim.loop.cwd()
+  local parent_path                  = normalize(cwd)
+  local child_path                   = normalize(file_path)
 
-  local is_parent_prefix  = child_path:sub(1, #parent_path) == parent_path
-  local is_direct_child_or_same_path = child_path:sub(#parent_path + 1, #parent_path + 1) == '/' or child_path:sub(#parent_path + 1, #parent_path + 1) == ''
+  local is_parent_prefix             = child_path:sub(1, #parent_path) == parent_path
+  local is_direct_child_or_same_path = child_path:sub(#parent_path + 1, #parent_path + 1) == '/' or
+      child_path:sub(#parent_path + 1, #parent_path + 1) == ''
 
   return is_parent_prefix and is_direct_child_or_same_path
 end
@@ -161,7 +167,7 @@ M.pick = function(opts)
   if not options then
     error("Plugin is not set up, call require('telescope').load_extension('recent_files')")
   end
-  opts = utils.assign({}, options, opts)
+  opts = utils.assign({}, options, theme_opts, opts)
   pickers.new(opts, {
     prompt_title = "Recent files",
     finder = finders.new_table {
