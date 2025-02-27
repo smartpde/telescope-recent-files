@@ -30,7 +30,7 @@ local theme_opts = {}
 M.setup = function(opts)
   options = utils.assign({}, defaults, opts)
   if opts.theme and opts.theme ~= "" then
-    theme_opts = themes["get_" .. opts.theme]()
+    theme_opts = themes["get_" .. opts.theme](opts.theme_opts or {})
   end
 end
 
